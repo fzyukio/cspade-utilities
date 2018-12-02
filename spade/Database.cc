@@ -1,36 +1,34 @@
-#include "calcdb.h"
-#include <cstring>
+#include "Database.h"
 
-Dbase_Ctrl_Blk::Dbase_Ctrl_Blk(char *infile, int buf_sz)
+Database::Database(char *infile, int buf_sz)
 {
    fd = open (infile, O_RDONLY);
    if (fd < 0){
-      printf("ERROR: InvalidFile -- Dbase_Ctrl_Blk()\n");
+      printf("ERROR: InvalidFile -- Database()\n");
       exit(-1);
    }
+
    buf_size = buf_sz;
    buf = new int [buf_sz];
    cur_buf_pos = 0;
    cur_blk_size = 0;
-   readall = 0;
-   endpos = lseek(fd,0,SEEK_END);
 }
    
-Dbase_Ctrl_Blk::~Dbase_Ctrl_Blk()
+Database::~Database()
 {
    delete [] buf;
    close(fd);
 }
 
-void Dbase_Ctrl_Blk::get_next_trans_ext()
+void Database::get_next_trans_ext(int &numitem, int &tid, int &custid)
 {
    // Need to get more items from file
-   int res = cur_blk_size - cur_buf_pos;
+   int res = cur_blk_size - cur_buf_pos+3;
    if (res > 0)
    {
       // First copy partial transaction to beginning of buffer
       memcpy((void *)buf,
-             (void *)(buf + cur_buf_pos),
+             (void *)(buf + cur_buf_pos - 3),
              res * ITSZ);
       cur_blk_size = res;
    }
@@ -48,16 +46,12 @@ void Dbase_Ctrl_Blk::get_next_trans_ext()
       exit(errno);
    }
    cur_blk_size += res/ITSZ;
-   //if (cur_blk_size > 0)
-   //{
-   //   custid = buf[0];
-   //   tid = buf[1];
-   //   numitem = buf[2];
-   //   cur_buf_pos = 3;   
-   //}
-   cur_buf_pos = 0;
+   if (cur_blk_size > 0)
+   {
+      custid = buf[0];
+      tid = buf[1];
+      numitem = buf[2];
+      cur_buf_pos = 3;   
+   }
 }
-
-
-
 
