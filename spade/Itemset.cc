@@ -1,18 +1,18 @@
 #include <errno.h>
 #include "Itemset.h"
+#include "../utils.h"
+
 extern char print_tidlist;
 
 Itemset::Itemset(int it_sz, int ival_sz, int nclass){
    //cout << "ITALLOC " << MEMUSED;   
    theItemset = new ArraySpade(it_sz);
    if (theItemset == NULL){
-      perror("memory:: Itemset");
-      exit(errno);
+      throw runtime_error("memory:: Itemset");
    }
    theIval = new ArraySpade(ival_sz);
    if (theIval == NULL){
-      perror("memory:: Ival");
-      exit(errno);
+      throw runtime_error("memory:: Ival");
    }
    
    //for (int i=0; i < ival_sz; i++)
@@ -113,23 +113,23 @@ void Itemset::print_seq(int itempl)
    int sz = size();
    //int templ = itempl;
    //int mask = 1 << (size()-1);
-   cout << (*theItemset)[0] << " ";
+   mined << (*theItemset)[0] << " ";
    for (i=1; i < sz-1; i++){
       //if (templ && mask) cout << "->";
       //templ = templ << 1;
       if (GETBIT(itempl,sz-1-i))
-         cout << "-> ";
-      cout << (*theItemset)[i] << " ";
+         mined << "-> ";
+      mined << (*theItemset)[i] << " ";
    }
    if (GETBIT(itempl,sz-1-i))
-      cout << "-> ";
-   cout << (*theItemset)[sz-1] << " ";
-   cout << "-- " << theSupport;
+      mined << "-> ";
+   mined << (*theItemset)[sz-1] << " ";
+   mined << "-- " << theSupport;
    for (i=0; i < NUMCLASS; i++)
-      cout << " " << clsSup[i];
-   cout << " ";
+      mined << " " << clsSup[i];
+   mined << " ";
    if (print_tidlist) print_idlist();
-   cout << endl;
+   mined << endl;
 }
 
 void Itemset::print_idlist()

@@ -6,31 +6,34 @@
 #include <err.h>
 #include <cstdlib>
 #include <cstdio>
+#include <cstring> 
 #include "utils.h"
 #include "StringArgvParser.h"
 
 
+char *copyChars(const char *s) {
+    char *d = static_cast<char *>(malloc(strlen(s) + 1));
+    if (d == NULL) return NULL;
+    strcpy(d, s);
+    return d;
+}
+
 void StringArgvParser::addCharToToken(char c) {
-    int n;
-
-    n = static_cast<int>(strlen(token));
-    if (n == ARGV_TOKEN_MAX - 1)
-        errx(1, "addCharToToken: reached max token length (%d)", ARGV_TOKEN_MAX);
-
-    token[n] = c;
+    token.push_back(c);
 }
 
 
 /* finish the current token: copy it into argv and setup next token */
 void StringArgvParser::finishToken() {
-    if (argc == ARGV_MAX)
-        errx(1, "finishToken: reached max argv length (%d)", ARGV_MAX);
-
-/*STATUS("finishing token: '%s'\n", token);*/
-    argv[argc++] = token;
-    if ((token = static_cast<char *>(calloc(ARGV_TOKEN_MAX, sizeof(char)))) == NULL)
-        err(1, "finishToken: failed to calloc");
-    bzero(token, ARGV_TOKEN_MAX * sizeof(char));
+    unsigned long size = token.size();
+    char* arg = new char[size + 1];
+    for (int i=0; i<size; i++) {
+        arg[i] = token.front();
+        token.pop_front();
+    }
+    arg[size] = '\0';
+    argv.push_back(arg);
+    argc++;
 }
 
 void StringArgvParser::parse(string s) {
@@ -153,15 +156,33 @@ int StringArgvParser::getArgc() const {
     return argc;
 }
 
-char** StringArgvParser::getArgv() {
+list<string>& StringArgvParser::getArgv() {
     return argv;
 }
 
 StringArgvParser::StringArgvParser(string s) {
     argc = 0;
-    if ((token = static_cast<char *>(calloc(ARGV_TOKEN_MAX, sizeof(char)))) == NULL)
-        err(1, "argv_init: failed to calloc");
-    bzero(token, ARGV_TOKEN_MAX * sizeof(char));
-
     parse(s);
+}
+
+args_t* parse(string s) {
+    StringArgvParser parser(s);
+    args_t * retval = new args_t();
+
+    list<string>& argv = parser.getArgv();
+    int argc = parser.getArgc();
+
+    char** argv_char = new char*[argc]();
+
+    list<string>::const_iterator iterator;
+    int idx = 0;
+    for (iterator = argv.begin(); iterator != argv.end(); ++iterator) {
+        const char* arg = (*iterator).c_str();
+        argv_char[idx] = copyChars(arg);
+        idx++;
+    }
+
+    retval->argc = argc;
+    retval->argv = argv_char;
+    return retval;
 }

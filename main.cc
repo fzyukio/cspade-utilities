@@ -1,8 +1,6 @@
 #include <iostream>
-#include <vector>
 
-#include "funcs.h"
-#include "StringArgvParser.h"
+#include "wrappers.h"
 
 using namespace std;
 
@@ -44,25 +42,24 @@ int main(int argc, char **argv) {
             spade = true;
         }
     }
-
     if (mb) {
-        StringArgvParser mbParser("makebin zaki.txt zaki.data\n");
-        makebinFunc(mbParser.getArgc(), mbParser.getArgv());
+        makebinWrapper("makebin test/zaki.txt zaki.data\n");
     }
 
     if (gc) {
-        StringArgvParser gcParser("getconf -i zaki -o zaki\n");
-        getconfFunc(gcParser.getArgc(), gcParser.getArgv());
+        getconfWrapper("getconf -i zaki -o zaki\n");
     }
 
     if (et) {
-        StringArgvParser etParser("exttpose -i zaki -o zaki -p 1 -l -x -s 0.3\n");
-        exttposeFunc(etParser.getArgc(), etParser.getArgv());
+        exttposeWrapper("exttpose -i zaki -o zaki -p 1 -l -x -s 0.3\n");
     }
 
     if (spade) {
-        StringArgvParser spadeParser("spade -i zaki -s 0.3 -Z 10 -z 10 -u 1 -r -e 1 -o\n");
-        sequenceFunc(spadeParser.getArgc(), spadeParser.getArgv());
+        spadeWrapper("spade -i zaki -s 0.3 -Z 10 -z 10 -u 1 -r -e 1 -o\n");
     }
+
+    result_t result = getResult();
+    cout << result.mined;
+    cout << result.nsequences;
     return 0;
 }

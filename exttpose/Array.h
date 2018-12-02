@@ -101,8 +101,7 @@ public:
       if (wblk > 0){
          int res = ::write(fd, (char *)theArray, wblk*sizeof(int));
          if (res < wblk*sizeof(int)){
-            perror("Error writing");
-            exit(errno);
+            throw runtime_error("Error writing");
          }
          offset[pos] += wblk;
       }
@@ -120,7 +119,7 @@ public:
 //                totSize *= 2;
 //                theArray = (int *)realloc(theArray, totSize*sizeof(int));
 //                if (theArray == NULL){
-//                   perror("ERROR IN REALLOC Array::add");
+//                   throw runtime_error("ERROR IN REALLOC Array::add");
 //                   exit(errno);
 //                }
 //             }

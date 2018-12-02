@@ -15,6 +15,7 @@
 #include <sys/mman.h>
 //#include <malloc.h>
 #include <cstring>
+#include "../utils.h"
 #include "Eqclass.h"
 #include "Itemset.h"
 #include "Lists.h"
@@ -23,7 +24,6 @@
 #include "spade.h"
 #include "maxgap.h"
 #include "../funcs.h"
-#include "../utils.h"
 
 using namespace std;
 
@@ -71,7 +71,6 @@ int postpruning = 0;
 int max_seq_len = 100;
 int max_iset_len = 100;
 
-ofstream mout;
 int DBASE_NUM_TRANS;
 int DBASE_MAXITEM;
 float DBASE_AVG_TRANS_SZ;
@@ -94,8 +93,7 @@ void add_freq(Itemset *it, int templ) {
         FreqArraySz = (int) (1.5 * FreqArraySz);
         FreqArray = (FreqIt **) realloc(FreqArray, FreqArraySz * sizeof(FreqIt *));
         if (FreqArray == NULL) {
-            perror("no mmeory fro FREqArray ");
-            exit(-1);
+            throw runtime_error("no mmeory fro FREqArray ");
         }
     }
     FreqArray[FreqArrayPos++] = freq;
@@ -183,7 +181,6 @@ void parse_args(int argc, char **argv) {
                     break;
                 case 'x':
                     memtrace = 1;
-                    mout.open(optarg, ios::app);
                     break;
                 case 'y':
                     print_tidlist = 1;
@@ -215,15 +212,14 @@ void parse_args(int argc, char **argv) {
 
     c = open(conf, O_RDONLY);
     if (c < 0) {
-        perror("ERROR: invalid conf file\n");
-        exit(errno);
+        throw runtime_error("ERROR: invalid conf file\n");
     }
     read(c, (char *) &DBASE_NUM_TRANS, ITSZ);
     if (MINSUPPORT == -1)
         MINSUPPORT = (int) (MINSUP_PER * DBASE_NUM_TRANS + 0.5);
     //ensure that support is at least 2
     if (MINSUPPORT < 1) MINSUPPORT = 1;
-    cout << "MINSUPPORT " << MINSUPPORT << " out of " << DBASE_NUM_TRANS << " sequences" << endl;
+    logger << "MINSUPPORT " << MINSUPPORT << " out of " << DBASE_NUM_TRANS << " sequences" << endl;
     read(c, (char *) &DBASE_MAXITEM, ITSZ);
     read(c, (char *) &DBASE_AVG_CUST_SZ, sizeof(float));
     read(c, (char *) &DBASE_AVG_TRANS_SZ, sizeof(float));
@@ -681,8 +677,7 @@ Eqclass *get_ext_eqclass(int it) {
 
     Eqclass *L2 = new Eqclass(1, EQCTYP1);
     if (L2 == NULL) {
-        perror("memory exceeded : ext_class ");
-        exit(errno);
+        throw runtime_error("memory exceeded : ext_class ");
     }
     //init seq pattern templates
     L2->set_templ(1);
@@ -729,15 +724,13 @@ Eqclass *get_ext_eqclass(int it) {
         if (ejoin) {
             ejoin = new Itemset(2, min(supsz, supsz2));
             if (ejoin == NULL) {
-                perror("memory exceeded");
-                exit(errno);
+                throw runtime_error("memory exceeded");
             }
         } else ejoin = NULL;
         if (ljoin) {
             ljoin = new Itemset(2, supsz2);
             if (ljoin == NULL) {
-                perror("memory exceeded");
-                exit(errno);
+                throw runtime_error("memory exceeded");
             }
         } else ljoin = NULL;
         //cout << "ljoin " << ljoin << " " << ejoin << " " <<
@@ -955,8 +948,7 @@ void process_cluster_list1(ListNodes<Itemset *> *hdr1,
     ListNodes<Itemset *> *hdr2;
     Eqclass *EQ = new Eqclass(iter - 1, eqtype);
     if (EQ == NULL) {
-        perror("memory exceeded");
-        exit(errno);
+        throw runtime_error("memory exceeded");
     }
     fill_seq_template(EQ, parent, 2);
     //int first;
@@ -1122,14 +1114,12 @@ void process_cluster1(Eqclass *cluster, Lists<Eqclass *> *LargeL, int iter) {
     if (cluster->list()->head()) {
         EQ = new Eqclass *[cluster->list()->size()];
         if (EQ == NULL) {
-            perror("memory exceeded");
-            exit(errno);
+            throw runtime_error("memory exceeded");
         }
         for (i = 0; i < cluster->list()->size(); i++) {
             EQ[i] = new Eqclass(iter - 1, EQCTYP1);
             if (EQ[i] == NULL) {
-                perror("memory exceeded");
-                exit(errno);
+                throw runtime_error("memory exceeded");
             }
             fill_seq_template(EQ[i], cluster, 1);
         }
@@ -1202,7 +1192,7 @@ void find_large(Eqclass *cluster, int it) {
         more = (LargelistSum > 0);
 
         Candidate = LargeL;
-        if (memtrace) mout << it << " " << MEMUSED << endl;
+        if (memtrace) memlog <<  it << " " << MEMUSED << endl;
 
         if (!more) {
             LargeL->clear();
@@ -1221,12 +1211,11 @@ void process_class(int it) {
     if (large2it == NULL) return;
 
     //cout << "*********************" << endl;
-    cout << "PROCESS " << it << endl;
     //large2it->print_list(large2it->list());
     //cout << "-----------" << endl;
     //large2it->print_list(large2it->list2());
     //cout << "*********************" << endl;
-    if (memtrace) mout << it << " " << MEMUSED << endl;
+    if (memtrace) memlog <<  it << " " << MEMUSED << endl;
     if (use_maxgap) {
         process_maxgap(large2it);
     } else {
@@ -1247,16 +1236,16 @@ void newSeq() {
         if (use_ascending == -1) {
             for (i = 0; i < DBASE_MAXITEM; i++)
                 if (eqgraph[i]) {
-                    if (memtrace) mout << i << " " << MEMUSED << endl;
+                    if (memtrace) memlog <<  i << " " << MEMUSED << endl;
                     process_class(i);
-                    if (memtrace) mout << i << " " << MEMUSED << endl;
+                    if (memtrace) memlog <<  i << " " << MEMUSED << endl;
                 }
         } else if (eqgraph[use_ascending])
             process_class(use_ascending);
     } else {
         for (i = DBASE_MAXITEM - 1; i >= 0; i--) {
             if (eqgraph[i]) {
-                if (memtrace) mout << i << " " << MEMUSED << endl;
+                if (memtrace) memlog <<  i << " " << MEMUSED << endl;
                 //cout << "PROCESSS ITEM " << i << endl << flush;
                 if (use_hash) FreqArrayPos = 0;
                 process_class(i);
@@ -1272,7 +1261,7 @@ void newSeq() {
                     }
                 }
                 //cout << " -------- " << endl;
-                if (memtrace) mout << i << " " << MEMUSED << endl;
+                if (memtrace) memlog <<  i << " " << MEMUSED << endl;
             }
         }
     }
@@ -1370,7 +1359,6 @@ void sequenceFunc(int argc, char **argv) {
     delete[] eqgraph;
 
     if (memtrace) {
-        mout << MEMUSED << endl;
-        mout.close();
+        memlog <<  MEMUSED << endl;
     }
 }

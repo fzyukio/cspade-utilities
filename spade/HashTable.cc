@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <stddef.h>
 #include <iostream>
+#include <sstream>
 #include "HashTable.h"
 
 
@@ -31,7 +32,6 @@ HashTable::HashTable (int size)
    theCells = new Itemset *[theSize];
    if (theCells == NULL){
       cout << "MEMORY EXCEEDED\n";
-      exit(-1);
    }
    for (i=0; i < theSize; i++){
       theCells[i] = NULL;
@@ -63,17 +63,20 @@ int HashTable::add (Itemset * item)
       }
    }
 
-   cout << "ERROR: hash table full\n";
-   cout << *item;
-   cout << "HVAL : " << hval;
-   cout << "PROBE SEQ: ";
-   for (i=0; i < theSize; i++){
-      pos = hash(hval,i);
-      cout << " " << pos;
+   ostringstream error;
+
+   error << "ERROR: hash table full: ";
+   error << *item;
+   error << "HVAL : " << hval;
+   error << "PROBE SEQ: ";
+   for (i = 0; i < theSize; i++) {
+      pos = hash(hval, i);
+      error << " " << pos;
    }
-   cout << "\n";
-   cout << *this;
-   exit(-1);
+   error << ".";
+   error << *this;
+
+   throw runtime_error(error.str());
 }
 
 int HashTable::find(Itemset * item)

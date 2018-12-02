@@ -88,7 +88,6 @@ public:
       theArray = (int *)::realloc(theArray, totSize*sizeof(int));
       if (theArray == NULL){
          cout << "MEMORY EXCEEDED\n";
-         exit(-1);
       }
       MEMUSED += totSize*sizeof(int);
    }

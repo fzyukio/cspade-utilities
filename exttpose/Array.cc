@@ -15,8 +15,7 @@ Array::Array (int sz, int npart){
       theArray =  (int *) malloc (totSize*sizeof(int));
       //theArray = new int [totSize];
       if (theArray == NULL){
-         perror("memory:: Array");
-         exit(errno);
+         throw runtime_error("memory:: Array");
       }
    }
 }

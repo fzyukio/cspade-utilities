@@ -112,8 +112,7 @@ tm=tp.tv_sec+tp.tv_usec/1000000.0
 
             c = open(inconfn, O_RDONLY);
             if (c < 0) {
-                perror("ERROR: invalid conf file\n");
-                exit(errno);
+                throw runtime_error("ERROR: invalid conf file\n");
             }
             if (use_seq) {
                 read(c, (char *) &DBASE_NUM_TRANS, ITSZ);
@@ -127,7 +126,7 @@ tm=tp.tv_sec+tp.tv_usec/1000000.0
                 read(c, (char *) &DBASE_MAXITEM, ITSZ);
                 read(c, (char *) &DBASE_AVG_TRANS_SZ, sizeof(float));
             }
-            cout << "CONF " << DBASE_NUM_TRANS << " " << DBASE_MAXITEM << " " <<
+            logger << "CONF " << DBASE_NUM_TRANS << " " << DBASE_MAXITEM << " " <<
                  DBASE_AVG_TRANS_SZ << " " << DBASE_AVG_CUST_SZ << endl;
 
             close(c);
@@ -135,7 +134,7 @@ tm=tp.tv_sec+tp.tv_usec/1000000.0
             if (use_diff) {
                 use_seq = 0;
                 num_partitions = 1;
-                cout << "SEQ TURNED OFF and PARTITIONS = 1\n";
+                logger << "SEQ TURNED OFF and PARTITIONS = 1\n";
             }
 
         }
@@ -220,7 +219,7 @@ tm=tp.tv_sec+tp.tv_usec/1000000.0
 
 //    sortflen = lseek(fd, 0, SEEK_CUR);
 //    if (sortflen < 0){
-//       perror("SEEK SEQ");
+//       throw runtime_error("SEEK SEQ");
 //       exit(errno);
 //    }
 //    cout << "SORT " << sortflen << endl;
@@ -235,7 +234,7 @@ tm=tp.tv_sec+tp.tv_usec/1000000.0
 //                              (MAP_FILE|MAP_VARIABLE|MAP_PRIVATE), fd, 0);
 // #endif
 //       if (sortary == (int *)-1){
-//          perror("SEQFd MMAP ERROR");
+//          throw runtime_error("SEQFd MMAP ERROR");
 //          exit(errno);
 //       }
 
@@ -302,8 +301,7 @@ tm=tp.tv_sec+tp.tv_usec/1000000.0
 
             sortflen = lseek(fd, 0, SEEK_CUR);
             if (sortflen < 0) {
-                perror("SEEK SEQ");
-                exit(errno);
+                throw runtime_error("SEEK SEQ");
             }
             //cout << "SORT " << sortflen << endl;
             if (sortflen > 0) {
@@ -317,8 +315,7 @@ tm=tp.tv_sec+tp.tv_usec/1000000.0
                                        MAP_PRIVATE, fd, 0);
 #endif
                 if (sortary == (int *) -1) {
-                    perror("SEQFd MMAP ERROR");
-                    exit(errno);
+                    throw runtime_error("SEQFd MMAP ERROR");
                 }
 
                 qsort(sortary, (sortflen / sizeof(int)) / 2, 2 * sizeof(int), cmp2it);
@@ -447,8 +444,7 @@ tm=tp.tv_sec+tp.tv_usec/1000000.0
                 if (num_partitions > 1) sprintf(tmpnam, "%s.P%d", output, p);
                 else sprintf(tmpnam, "%s", output);
                 if ((fd = open(tmpnam, (O_WRONLY | O_CREAT | O_TRUNC), 0666)) < 0) {
-                    perror("Can't open out file");
-                    exit(errno);
+                    throw runtime_error("Can't open out file");
                 }
 
                 for (i = 0; i < numfreq; i++) {
@@ -458,7 +454,7 @@ tm=tp.tv_sec+tp.tv_usec/1000000.0
                 int plb = p * pblk + mincustid;
                 int pub = plb + pblk;
                 if (pub >= maxcustid) pub = maxcustid + 1;
-                cout << "BOUNDS " << plb << " " << pub << endl;
+                logger << "BOUNDS " << plb << " " << pub << endl;
                 int fcnt;
                 for (; !DCB->eof() && custid < pub;) {
                     fcnt = 0;
@@ -534,7 +530,7 @@ tm=tp.tv_sec+tp.tv_usec/1000000.0
                 close(fd);
             }
             seconds(t2);
-            cout << "WROTE INVERT " << t2 - t1 << endl;
+            logger << "WROTE INVERT " << t2 - t1 << endl;
             tpose_time = t2 - t1;
         }
 
@@ -580,14 +576,14 @@ tm=tp.tv_sec+tp.tv_usec/1000000.0
             }
             //cout << endl;
             int maxcustid = custid;
-            cout << "MINMAX " << mincustid << " " << maxcustid << endl;
+            logger << "MINMAX " << mincustid << " " << maxcustid << endl;
 
             int *freqidx = new int[DBASE_MAXITEM];
             int numfreq = 0;
             for (i = 0; i < DBASE_MAXITEM; i++) {
                 if (use_seq) {
                     if (itcnt[i] >= MINSUPPORT) {
-                        cout << i << " SUPP " << itcnt[i] << endl;
+                        logger << i << " SUPP " << itcnt[i] << endl;
                         freqidx[i] = numfreq;
                         numfreq++;
                     } else freqidx[i] = -1;
@@ -614,14 +610,14 @@ tm=tp.tv_sec+tp.tv_usec/1000000.0
             }
 
             seconds(t2);
-            cout << "numfreq " << numfreq << " :  " << t2 - t1
+            logger << "numfreq " << numfreq << " :  " << t2 - t1
                  << " SUMSUP SUMDIFF = " << sumsup << " " << sumdiff << endl;
 
             if (numfreq == 0) return;
 
             int extarysz = AMEM / numfreq;
             extarysz /= sizeof(int);
-            cout << "EXTRARYSZ " << extarysz << endl;
+            logger << "EXTRARYSZ " << extarysz << endl;
             if (extarysz < 2) extarysz = 2;
             Array **extary = new Array *[numfreq];
             for (i = 0; i < numfreq; i++) {
@@ -661,11 +657,10 @@ tm=tp.tv_sec+tp.tv_usec/1000000.0
                         }
                     } else sprintf(tmpnam, "%s", idxfn);
                     //cout << "100 VAL " << itcnt[100] << endl;
-                    cout << "OPENED " << tmpnam << endl;
+                    logger << "OPENED " << tmpnam << endl;
                     ofd.open(tmpnam);
                     if (!ofd) {
-                        perror("Can't open out file");
-                        exit(errno);
+                        throw runtime_error("Can't open out file");
                     }
 
                     int file_offset = 0;
@@ -687,7 +682,7 @@ tm=tp.tv_sec+tp.tv_usec/1000000.0
                         } else ofd.write((char *) &null, ITSZ);
                         //cout << "OFF " << i <<" " << file_offset << endl;
                     }
-                    cout << "OFF " << i << " " << file_offset << endl;
+                    logger << "OFF " << i << " " << file_offset << endl;
                     ofd.write((char *) &file_offset, ITSZ);
                     ofd.close();
                 }
@@ -698,13 +693,12 @@ tm=tp.tv_sec+tp.tv_usec/1000000.0
             delete[] itcnt;
 
             seconds(t2);
-            cout << "Wrote Offt " << t2 - t1 << endl;
+            logger << "Wrote Offt " << t2 - t1 << endl;
             offt_time = t2 - t1;
 
             int *fidx = new int[numfreq];
             if (fidx == NULL) {
-                perror("Can't alloc fidx");
-                exit(errno);
+                throw runtime_error("Can't alloc fidx");
             }
 
             int ocid = -1;
@@ -713,22 +707,19 @@ tm=tp.tv_sec+tp.tv_usec/1000000.0
                 int seqfd, isetfd;
                 if (use_seq) {
                     if ((seqfd = open("tmpseq", (O_RDWR | O_CREAT | O_TRUNC), 0666)) < 0) {
-                        perror("Can't open out file");
-                        exit(errno);
+                        throw runtime_error("Can't open out file");
                     }
                 }
 
                 if ((isetfd = open("tmpiset", (O_RDWR | O_CREAT | O_TRUNC), 0666)) < 0) {
-                    perror("Can't open out file");
-                    exit(errno);
+                    throw runtime_error("Can't open out file");
                 }
 
                 CHAR *seq2;
                 if (use_seq) {
                     seq2 = new CHAR[numfreq * numfreq];
                     if (seq2 == NULL) {
-                        perror("SEQ MMAP ERROR");
-                        exit(errno);
+                        throw runtime_error("SEQ MMAP ERROR");
                     }
                     //for (i=0; i < numfreq*numfreq; i++) seq2[i] = 0;
                     bzero((char *) seq2, numfreq * numfreq * sizeof(CHAR));
@@ -736,15 +727,13 @@ tm=tp.tv_sec+tp.tv_usec/1000000.0
 
                 CHAR *itcnt2 = new CHAR[(numfreq * (numfreq - 1) / 2)];
                 if (itcnt2 == NULL) {
-                    perror("ITCNT MMAP ERROR");
-                    exit(errno);
+                    throw runtime_error("ITCNT MMAP ERROR");
                 }
                 bzero((char *) itcnt2, (numfreq * (numfreq - 1) / 2) * sizeof(CHAR));
                 //for (i=0; i < numfreq*(numfreq-1)/2; i++) itcnt2[i] = 0;
                 char *ocust = new char[(numfreq * (numfreq - 1) / 2)];
                 if (ocust == NULL) {
-                    perror("OCUSt MMAP ERROR");
-                    exit(errno);
+                    throw runtime_error("OCUSt MMAP ERROR");
                 }
                 bzero((char *) ocust, (numfreq * (numfreq - 1) / 2) * sizeof(char));
                 int *offsets = new int[numfreq];
@@ -817,8 +806,7 @@ tm=tp.tv_sec+tp.tv_usec/1000000.0
                 if (use_seq) {
                     ofd.open(seqfn);
                     if (ofd.fail()) {
-                        perror("Can't open seq file");
-                        exit(errno);
+                        throw runtime_error("Can't open seq file");
                     }
                     sort_get_l2(l2cnt, seqfd, ofd, backidx, freqidx,
                                 numfreq, offsets, seq2, 1);
@@ -831,8 +819,7 @@ tm=tp.tv_sec+tp.tv_usec/1000000.0
                 ofd.open(it2fn);
                 //if ((fd = open(it2fn, (O_WRONLY|O_CREAT|O_TRUNC), 0666)) < 0){
                 if (ofd.fail()) {
-                    perror("Can't open it2 file");
-                    exit(errno);
+                    throw runtime_error("Can't open it2 file");
                 }
                 sort_get_l2(l2cnt, isetfd, ofd, backidx, freqidx,
                             numfreq, offsets, itcnt2, 0);
@@ -871,12 +858,12 @@ tm=tp.tv_sec+tp.tv_usec/1000000.0
             MINSUPPORT = (int) (MINSUP_PER * DBASE_NUM_TRANS + 0.5);
             //ensure that support is at least 2
             if (!write_only_fcnt && MINSUPPORT < 1) MINSUPPORT = 1;
-            cout << "MINSUPPORT " << MINSUPPORT << " " << DBASE_NUM_TRANS << endl;
+            logger << "MINSUPPORT " << MINSUPPORT << " " << DBASE_NUM_TRANS << endl;
 
             tpose();
 
             seconds(te);
-            cout << "Total elapsed time " << te - ts << endl;
+            logger << "Total elapsed time " << te - ts << endl;
         }
     }
 }

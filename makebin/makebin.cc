@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <cmath>
+#include <cstring>
 #include "../funcs.h"
 
 using namespace std;
@@ -37,14 +38,15 @@ namespace utility {
             char inBuf[lineSize];
             int inSize;
             fin.open(argv[1]);
-            if (!fin) {
-                perror("cannot open in file");
-                exit(errno);
-            }
             fout.open(argv[2]);
+
+            if (!fin) {
+                string error_message = "can't open ascii file: " + string(argv[1]);
+                throw runtime_error(error_message);
+            }
             if (!fout) {
-                perror("cannot open out file");
-                exit(errno);
+                string error_message = "can't open binary file: " + string(argv[2]);
+                throw runtime_error(error_message);
             }
 
             while (fin.getline(inBuf, lineSize)) {

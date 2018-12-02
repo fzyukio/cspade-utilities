@@ -11,8 +11,7 @@ ArraySpade::ArraySpade (int sz){
       theArray =  (int *) malloc (totSize*sizeof(int));
       //theArray = new int [totSize];
       if (theArray == NULL){
-         perror("memory:: ArraySpade");
-         exit(errno);
+         throw runtime_error("memory:: ArraySpade");
       }
       MEMUSED += totSize*sizeof(int);
    }

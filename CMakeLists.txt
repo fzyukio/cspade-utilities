@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 98)
 add_executable(getconf
         getconf/calcdb.cc
         getconf/getconf.cc
-        getconf/main.cc utils.h)
+        getconf/main.cc utils.h utils.cc)
 
 add_executable(spade_utility
         main.cc
@@ -41,4 +41,4 @@ add_executable(spade_utility
         getconf/calcdb.cc
         getconf/calcdb.h
         exttpose/calcdb.cc
-        exttpose/calcdb.h utils.h)
+        exttpose/calcdb.h utils.h wrappers.cc wrappers.h utils.cc)

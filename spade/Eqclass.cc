@@ -9,8 +9,7 @@ Eqclass::Eqclass(int iset_sz, int eqt){
    Eqtype = eqt;
    theList = new Lists<Itemset *>;
    if (theList == NULL){
-      perror("memory :: Eqclass");
-      exit(errno);
+      throw runtime_error("memory :: Eqclass");
    }
    seqTemplate = seqTemplate2 = 0;
    //seqTemplate = new int[Iset_size];
@@ -19,8 +18,7 @@ Eqclass::Eqclass(int iset_sz, int eqt){
    if (Eqtype == EQCTYP1){
       theList2 = new Lists<Itemset *>;
       if (theList2 == NULL){
-         perror("memory :: Eqclass");
-         exit(errno);
+         throw runtime_error("memory :: Eqclass");
       }
       //seqTemplate2 = new int[Iset_size];
    }

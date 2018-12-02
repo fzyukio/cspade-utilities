@@ -11,6 +11,7 @@
 #include <cmath>
 #include "calcdb.h"
 #include "../funcs.h"
+#include "../utils.h"
 
 using namespace std;
 
@@ -110,8 +111,7 @@ namespace utility {
             //write config info to new file
             int conffd;
             if ((conffd = open(confn, (O_WRONLY | O_CREAT), 0666)) < 0) {
-                perror("Can't open out file");
-                exit(errno);
+                throw runtime_error("Can't open out file");
             }
             if (use_seq) {
                 write(conffd, (char *) &DBASE_NUM_CUST, ITSZ);
@@ -130,9 +130,11 @@ namespace utility {
             }
 
             close(conffd);
-            printf("CONF %d %d %f %f %d %d %d %f %d\n", DBASE_NUM_CUST, DBASE_MAXITEM,
+            char out[255];
+            sprintf(out, "CONF %d %d %f %f %d %d %d %f %d\n", DBASE_NUM_CUST, DBASE_MAXITEM,
                    DBASE_AVG_CUST_SZ, DBASE_AVG_TRANS_SZ, DBASE_NUM_TRANS,
                    DBASE_MINTRANS, DBASE_MAXTRANS, stddev, maxnitem);
+            logger << out;
             delete DCB;
         }
     }

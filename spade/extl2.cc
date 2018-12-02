@@ -10,10 +10,10 @@
 #include <sys/mman.h>
 //#include <malloc.h>
 #include <cstring>
- 
+
+#include "../utils.h" 
 #include "extl2.h"
 #include "spade.h"
-#include "../utils.h"
 
 #define seqitcntbufsz 4086
 
@@ -65,8 +65,7 @@ void invdb::incr(int sz)
    curcid = (int *) realloc(curcid, numcust*ITSZ);
    curitsz = (int *) realloc(curitsz, numcust*ITSZ);
    if (curit == NULL || curcnt == NULL || curitsz == NULL || curcid == NULL){
-      perror("REALLCO  curit");
-      exit(-1);
+      throw runtime_error("REALLCO  curit");
    }
    
    int i;   
@@ -86,8 +85,7 @@ void invdb::incr_curit(int midx)
    //cout << "NEW " << curitsz[midx] << endl;
    curit[midx] = (int *)realloc(curit[midx], curitsz[midx]*ITSZ);
    if (curit[midx] == NULL){
-      perror("REALLCO  curit");
-      exit(-1);
+      throw runtime_error("REALLCO  curit");
    }
    //cout << "INCR " << midx << " " << curitsz[midx] << endl;
 }
@@ -136,8 +134,7 @@ int make_l1_pass()
    F1::init();
    F1::backidx = (int *) malloc (bsz*ITSZ);
    if (F1::backidx == NULL){
-      perror("F1::BACKIDX NULL");
-      exit(-1);
+      throw runtime_error("F1::BACKIDX NULL");
    }
    F1::fidx = new int[DBASE_MAXITEM];
 
@@ -145,8 +142,7 @@ int make_l1_pass()
    int ivalsz=100;
    int *ival = (int *)malloc(ivalsz*ITSZ);
    if (ival == NULL){
-      perror("IVAL NULL");
-      exit(-1);
+      throw runtime_error("IVAL NULL");
    }
    int tt=0;
    for (i=0; i < DBASE_MAXITEM; i++){
@@ -155,8 +151,7 @@ int make_l1_pass()
          ivalsz = supsz;
          ival = (int *)realloc (ival, ivalsz*ITSZ);
          if (ival == NULL){
-            perror("IVAL NULL");
-            exit(-1);
+            throw runtime_error("IVAL NULL");
          }
       }
       partition_read_item(ival, i);
@@ -179,8 +174,7 @@ int make_l1_pass()
                bsz = 2*bsz;
                F1::backidx = (int *)realloc (F1::backidx, bsz*ITSZ);
                if (F1::backidx == NULL){
-                  perror("F1::BACKIDX NULL");
-                  exit(-1);
+                  throw runtime_error("F1::BACKIDX NULL");
                }
             }
             F1::backidx[F1::numfreq]  = i; 
@@ -194,14 +188,14 @@ int make_l1_pass()
       //cout << "ITEM " << i << " "<< ClassInfo::TMPE[0] << endl;
       
       if (lflg){
-         if (outputfreq) cout << i << " --";
+         if (outputfreq) mined << i << " --";
          for (j=0; j < NUMCLASS; j++){
             F1::add_sup(ClassInfo::TMPE[j], j);
-            if (outputfreq) cout << " " << ClassInfo::TMPE[j];
+            if (outputfreq) mined << " " << ClassInfo::TMPE[j];
          }
-         if (outputfreq) cout << " " << F1::get_sup(i) << " ";
+         if (outputfreq) mined << " " << F1::get_sup(i) << " ";
          if (print_tidlist) print_idlist(ival, supsz);
-         if (outputfreq) cout << endl;
+         if (outputfreq) mined << endl;
       }
    }
    //cout << "MAXCID " << tt << endl;
@@ -209,8 +203,7 @@ int make_l1_pass()
 
    F1::backidx = (int *)realloc(F1::backidx, F1::numfreq*ITSZ);
    if (F1::backidx == NULL && F1::numfreq != 0){
-      perror("F1::BACKIDX NULL");
-      exit(-1);
+      throw runtime_error("F1::BACKIDX NULL");
    }
 
    free(ival);
@@ -308,8 +301,7 @@ void process_invert(int pnum)
          ivalsz = supsz;
          ival = (int *)realloc (ival, ivalsz*ITSZ);
          if (ival == NULL){
-            perror("IVAL NULL");
-            exit(-1);
+            throw runtime_error("IVAL NULL");
          }
       }
       //cout << "READ " << i << " " << F1::backidx[i] << endl;
@@ -324,7 +316,7 @@ void process_invert(int pnum)
          midx = cid - minv;
          
          //if (midx >= maxv-minv+1){
-         //   perror("EXCEEDED BOUNDS\n");
+         //   throw runtime_error("EXCEEDED BOUNDS\n");
          //}
          //cout << "MIDX " << midx << endl;
          //cout << "VALSx " << midx << " "<< cid << " " <<invDB->curcid[midx]
@@ -579,8 +571,7 @@ void get_l2file(char *fname, char use_seq, int &l2cnt)
    int *cntary;
    int fd = open(fname, O_RDONLY);
    if (fd < 1){
-      perror("can't open l2 file");
-      exit(errno);
+      throw runtime_error("can't open l2 file");
    }   
    int flen = lseek(fd,0,SEEK_END);
    if (flen > 0){
@@ -592,8 +583,7 @@ void get_l2file(char *fname, char use_seq, int &l2cnt)
                              (MAP_FILE|MAP_VARIABLE|MAP_PRIVATE), fd, 0);
 #endif
       if (cntary == (int *)-1){
-         perror("MMAP ERROR:cntary");  
-         exit(errno);
+         throw runtime_error("MMAP ERROR:cntary");
       }
       
       // build eqgraph -- large 2-itemset relations

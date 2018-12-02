@@ -72,7 +72,6 @@ void Lists<Items>::append (Items item){
    node = new ListNodes<Items> (item, 0);
    if (node == NULL){
       cout << "MEMORY EXCEEDED\n";
-      exit(-1);
    }
    
    if (theHead == 0){
@@ -94,7 +93,6 @@ void Lists<Items>::prepend (Items item){
    node = new ListNodes<Items> (item, 0);
    if (node == NULL){
       cout << "MEMORY EXCEEDED\n";
-      exit(-1);
    }
    
    if (theHead == 0){
@@ -126,7 +124,6 @@ void Lists<Items>::sortedDescend(Items item, CMP_FUNC cmpare){
    node = new ListNodes<Items>(item, 0);
    if (node == NULL){
       cout << "MEMORY EXCEEDED\n";
-      exit(-1);
    }
    
    if (theHead == 0){
@@ -162,7 +159,6 @@ void Lists<Items>::sortedAscend (Items item, CMP_FUNC cmpare)
    node = new ListNodes<Items>(item,0);
    if (node == NULL){
       cout << "MEMORY EXCEEDED\n";
-      exit(-1);
    }
    
    if (theHead == 0){
@@ -233,7 +229,6 @@ void Lists<Items>::insert(ListNodes<Items> *&prev, Items item)
    ListNodes<Items> *node = new ListNodes<Items>(item,0);
    if (node == NULL){
       cout << "MEMORY EXCEEDED\n";
-      exit(-1);
    }
    
    if (prev == NULL){
