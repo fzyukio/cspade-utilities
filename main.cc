@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "cstring"
 #include "wrappers.h"
 
 using namespace std;
