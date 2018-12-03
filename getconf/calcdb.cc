@@ -6,7 +6,7 @@ namespace utility {
         GcDatabase::GcDatabase(char *infile, int buf_sz) {
             fd = open(infile, O_RDONLY);
             if (fd < 0) {
-                printf("ERROR: InvalidFile -- GcDatabase()\n");
+                throw runtime_error("ERROR: InvalidFile -- GcDatabase()");
             }
             buf_size = buf_sz;
             buf = new int[buf_sz];

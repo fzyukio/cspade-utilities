@@ -6,7 +6,9 @@
 #include <err.h>
 #include <cstdlib>
 #include <cstdio>
-#include <cstring> 
+#include <cstring>
+#include <algorithm>
+#include <string>
 #include "utils.h"
 #include "StringArgvParser.h"
 
@@ -36,7 +38,13 @@ void StringArgvParser::finishToken() {
     argc++;
 }
 
-void StringArgvParser::parse(string s) {
+string ensure_one_newline(const string& s) {
+    string str(s);
+    str.erase(std::remove(str.begin(), str.end(), '\n'), str.end());
+    return str + "\n";
+}
+
+void StringArgvParser::parse(const string& s) {
     bool in_token;
     bool in_container;
     bool escaped;
@@ -45,15 +53,17 @@ void StringArgvParser::parse(string s) {
     int len;
     int i;
 
+    string str = ensure_one_newline(s);
+
     container_start = 0;
     in_token = false;
     in_container = false;
     escaped = false;
 
-    len = static_cast<int>(s.length());
+    len = static_cast<int>(str.length());
 
     for (i = 0; i < len; i++) {
-        c = s[i];
+        c = str[i];
 
         switch (c) {
             /* handle whitespace */
@@ -115,15 +125,13 @@ void StringArgvParser::parse(string s) {
                  * e.g.
                  *    hell"o
                  *
-                 * what's done here appears shell-dependent,
-                 * but overall, it's an error.... i *think*
+                 * what'str done here appears shell-dependent,
+                 * but overall, it'str an error.... i *think*
                  */
-                printf("Parse Error! Bad quotes\n");
-                break;
-
+                throw runtime_error("Parse Error! Bad quotes");
             case '\\':
 
-                if (in_container && s[i + 1] != container_start) {
+                if (in_container && str[i + 1] != container_start) {
                     addCharToToken(c);
                     continue;
                 }
@@ -146,10 +154,10 @@ void StringArgvParser::parse(string s) {
     }
 
     if (in_container)
-        printf("Parse Error! Still in container\n");
+        throw runtime_error("Parse Error! Still in container\n");
 
     if (escaped)
-        printf("Parse Error! Unused escape (\\)\n");
+        throw runtime_error("Parse Error! Unused escape (\\)\n");
 }
 
 int StringArgvParser::getArgc() const {
@@ -160,12 +168,12 @@ list<string>& StringArgvParser::getArgv() {
     return argv;
 }
 
-StringArgvParser::StringArgvParser(string s) {
+StringArgvParser::StringArgvParser(const string& s) {
     argc = 0;
     parse(s);
 }
 
-args_t* parse(string s) {
+args_t* parse(const string& s) {
     StringArgvParser parser(s);
     args_t * retval = new args_t();
 

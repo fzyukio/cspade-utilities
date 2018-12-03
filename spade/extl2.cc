@@ -571,7 +571,7 @@ void get_l2file(char *fname, char use_seq, int &l2cnt)
    int *cntary;
    int fd = open(fname, O_RDONLY);
    if (fd < 1){
-      throw runtime_error("can't open l2 file");
+      throw runtime_error("can't open l2 file: " + string(fname));
    }   
    int flen = lseek(fd,0,SEEK_END);
    if (flen > 0){

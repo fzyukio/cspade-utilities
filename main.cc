@@ -4,7 +4,19 @@
 
 using namespace std;
 
-int main(int argc, char **argv) {
+int main() {
+    string filename("test/zaki.txt");
+
+    spade_arg_t args;
+    args.maxgap = 1;
+    args.support = 0.3;
+    result_t result = runSpade(filename, args);
+    cout << result.mined;
+    cout << result.logger;
+    return 0;
+}
+
+int main1(int argc, char **argv) {
     bool mb = false;
     bool gc = false;
     bool et = false;
@@ -43,19 +55,19 @@ int main(int argc, char **argv) {
         }
     }
     if (mb) {
-        makebinWrapper("makebin test/zaki.txt zaki.data\n");
+        makebinWrapper("makebin test/zaki.txt zaki.data");
     }
 
     if (gc) {
-        getconfWrapper("getconf -i zaki -o zaki\n");
+        getconfWrapper("getconf -i zaki -o zaki");
     }
 
     if (et) {
-        exttposeWrapper("exttpose -i zaki -o zaki -p 1 -l -x -s 0.3\n");
+        exttposeWrapper("exttpose -i zaki -o zaki -p 1 -l -x -s 0.3");
     }
 
     if (spade) {
-        spadeWrapper("spade -i zaki -s 0.3 -Z 10 -z 10 -u 1 -r -e 1 -o\n");
+        spadeWrapper("spade -i zaki -s 0.3 -Z 10 -z 10 -u 1 -r -e 1 -o");
     }
 
     result_t result = getResult();

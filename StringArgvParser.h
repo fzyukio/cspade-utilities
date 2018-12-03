@@ -23,13 +23,13 @@ class StringArgvParser {
     /* finish the current token: copy it into argv and setup next token */
     void finishToken();
 
-    void parse(string s);
+    void parse(const string& s);
 
 public:
     int getArgc() const;
     list<string>& getArgv();
 
-    StringArgvParser(string s);
+    explicit StringArgvParser(const string& s);
 };
 
 
@@ -45,6 +45,6 @@ struct args_t {
     }
 };
 
-args_t* parse(string s);
+args_t* parse(const string& s);
 
 #endif //SPADE_UTILITY_STRINGARGVPARSER_H

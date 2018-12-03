@@ -16,4 +16,6 @@ void getconfWrapper(const string& s);
 void makebinWrapper(const string& s);
 result_t getResult();
 
+result_t runSpade(const string& filename, spade_arg_t args);
+
 #endif //SPADE_UTILITY_WRAPPERS_H
